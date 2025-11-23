@@ -1,0 +1,474 @@
+[
+  {
+    "codigo": "4200910",
+    "nombre": "Fundamentos de Programación",
+    "semestre": 1,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000004",
+    "nombre": "Cálculo Diferencial",
+    "semestre": 1,
+    "creditos": 4,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100538",
+    "nombre": "Introducción a la Administración",
+    "semestre": 1,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100543",
+    "nombre": "Introducción a la Epistemología",
+    "semestre": 1,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000044",
+    "nombre": "Inglés I",
+    "semestre": 1,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "LENGUA EXTRANJERA"
+  },
+  {
+    "codigo": "4200916",
+    "nombre": "Programación Orientada a Objetos",
+    "semestre": 2,
+    "creditos": 3,
+    "prerequisitos": ["4200910"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200919",
+    "nombre": "Teoría de la Administración y la Organización I",
+    "semestre": 2,
+    "creditos": 2,
+    "prerequisitos": ["4100538"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000005",
+    "nombre": "Cálculo Integral",
+    "semestre": 2,
+    "creditos": 4,
+    "prerequisitos": ["1000004"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100539",
+    "nombre": "Fundamentos de Economía",
+    "semestre": 2,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000045",
+    "nombre": "Inglés II",
+    "semestre": 2,
+    "creditos": 3,
+    "prerequisitos": ["1000044"],
+    "tipologia": "LENGUA EXTRANJERA"
+  },
+  {
+    "codigo": "4100548",
+    "nombre": "Estructuras de Datos",
+    "semestre": 3,
+    "creditos": 3,
+    "prerequisitos": ["4200916"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200908",
+    "nombre": "Arquitectura de Computadores",
+    "semestre": 3,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100578",
+    "nombre": "Estadística I",
+    "semestre": 3,
+    "creditos": 3,
+    "prerequisitos": ["1000005"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100550",
+    "nombre": "Sistemas de Información",
+    "semestre": 3,
+    "creditos": 3,
+    "prerequisitos": ["4200919"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "1000003",
+    "nombre": "Álgebra Lineal",
+    "semestre": 3,
+    "creditos": 4,
+    "prerequisitos": ["1000004"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000046",
+    "nombre": "Inglés III",
+    "semestre": 3,
+    "creditos": 3,
+    "prerequisitos": ["1000045"],
+    "tipologia": "LENGUA EXTRANJERA"
+  },
+  {
+    "codigo": "4100549",
+    "nombre": "Análisis y Diseño de Algoritmos",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["4100548"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100552",
+    "nombre": "Bases de Datos I",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["4100548"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100555",
+    "nombre": "Planeación de Sistemas de Información",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["4100550"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200909",
+    "nombre": "Contabilidad y Costos",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["4100539"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100591",
+    "nombre": "Investigación de Operaciones I",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["4100578", "1000003"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "1000047",
+    "nombre": "Inglés IV",
+    "semestre": 4,
+    "creditos": 3,
+    "prerequisitos": ["1000046"],
+    "tipologia": "LENGUA EXTRANJERA"
+  },
+  {
+    "codigo": "4100553",
+    "nombre": "Ingeniería de Software I",
+    "semestre": 5,
+    "creditos": 3,
+    "prerequisitos": ["4100549"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200915",
+    "nombre": "Programación con Tecnologías Web",
+    "semestre": 5,
+    "creditos": 3,
+    "prerequisitos": ["4100552"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100541",
+    "nombre": "Administración Financiera",
+    "semestre": 5,
+    "creditos": 3,
+    "prerequisitos": ["4200909"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100554",
+    "nombre": "Ingeniería de Software II",
+    "semestre": 6,
+    "creditos": 3,
+    "prerequisitos": ["4100553"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100557",
+    "nombre": "Sistemas Operativos",
+    "semestre": 6,
+    "creditos": 3,
+    "prerequisitos": ["4200908"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200917",
+    "nombre": "Sistemas Inteligentes Computacionales",
+    "semestre": 6,
+    "creditos": 3,
+    "prerequisitos": ["4100549"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100561",
+    "nombre": "Auditoría de Sistemas I",
+    "semestre": 7,
+    "creditos": 3,
+    "prerequisitos": ["4100554"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100558",
+    "nombre": "Fundamentos de Redes de Datos",
+    "semestre": 7,
+    "creditos": 3,
+    "prerequisitos": ["4100557"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100544",
+    "nombre": "Psicología Social",
+    "semestre": 7,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4200914",
+    "nombre": "Modelos de Gestión de Tecnologías",
+    "semestre": 8,
+    "creditos": 3,
+    "prerequisitos": ["4100561"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100562",
+    "nombre": "Formulación y Evaluación de Proyectos",
+    "semestre": 8,
+    "creditos": 3,
+    "prerequisitos": ["4100541", "4100591"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200911",
+    "nombre": "Gerencia Estratégica del Talento Humano",
+    "semestre": 8,
+    "creditos": 2,
+    "prerequisitos": ["4100544"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4100560",
+    "nombre": "Metodología de Investigación",
+    "semestre": 8,
+    "creditos": 3,
+    "prerequisitos": ["4100578"],
+    "tipologia": "FUND. OBLIGATORIA"
+  },
+  {
+    "codigo": "4200918",
+    "nombre": "Tendencias en Administración de Sistemas",
+    "semestre": 8,
+    "creditos": 3,
+    "prerequisitos": ["4200917"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4200921",
+    "nombre": "Arquitectura Empresarial",
+    "semestre": 9,
+    "creditos": 3,
+    "prerequisitos": ["4200914"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100563",
+    "nombre": "Gerencia de Proyectos Tecnológicos",
+    "semestre": 9,
+    "creditos": 3,
+    "prerequisitos": ["4100562"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100565",
+    "nombre": "Legislación Tecnológica",
+    "semestre": 9,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "4100573",
+    "nombre": "Trabajo de Grado",
+    "semestre": 10,
+    "creditos": 6,
+    "prerequisitos": ["4100560"],
+    "tipologia": "TRABAJO DE GRADO"
+  },
+  {
+    "codigo": "4100559",
+    "nombre": "Práctica",
+    "semestre": 10,
+    "creditos": 7,
+    "prerequisitos": ["4100563"],
+    "tipologia": "DISCIPLINAR OBLIGATORIA"
+  },
+  {
+    "codigo": "1000006",
+    "nombre": "Cálculo Vectorial",
+    "semestre": null,
+    "creditos": 4,
+    "prerequisitos": ["1000005"],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "1000007",
+    "nombre": "Ecuaciones Diferenciales",
+    "semestre": null,
+    "creditos": 4,
+    "prerequisitos": ["1000005"],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "4100579",
+    "nombre": "Estadística II",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100578"],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "1000019",
+    "nombre": "Física Mecánica",
+    "semestre": null,
+    "creditos": 4,
+    "prerequisitos": ["1000004"],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "4100581",
+    "nombre": "Investigación de Operaciones II",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100591"],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "4200913",
+    "nombre": "Matemáticas Discretas",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "FUND. OPTATIVA"
+  },
+  {
+    "codigo": "4100571",
+    "nombre": "Auditoría de Sistemas II",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100561"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100567",
+    "nombre": "Bases de Datos II",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100552"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100566",
+    "nombre": "Dinámica de Sistemas",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100538", "4100578"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100572",
+    "nombre": "Ingeniería de Software III",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100554"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4200912",
+    "nombre": "Inteligencia de Negocios",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4101392",
+    "nombre": "Minería de Datos",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4101393",
+    "nombre": "Modelos de Gestión de Tecnologías de Información",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100568",
+    "nombre": "Simulación",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100591"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100852",
+    "nombre": "Sistemas de Gestión Integral y Gestión del Conocimiento",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["20% créditos componente Disciplinar o Profesional"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100569",
+    "nombre": "Sistemas Inteligentes Computacionales",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4100548"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100570",
+    "nombre": "Sociología de la Industria y el Trabajo",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": [],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  },
+  {
+    "codigo": "4100853",
+    "nombre": "Teoría de la Administración y la Organización II",
+    "semestre": null,
+    "creditos": 3,
+    "prerequisitos": ["4200919"],
+    "tipologia": "DISCIPLINAR OPTATIVA"
+  }
+]
