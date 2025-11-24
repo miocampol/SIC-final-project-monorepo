@@ -6,7 +6,7 @@ from langchain_ollama import OllamaEmbeddings, OllamaLLM
 from langchain_community.vectorstores import Chroma
 import ollama
 import re
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 
 
 def obtener_vectorstore():
@@ -24,16 +24,27 @@ def obtener_vectorstore():
     return vectorstore
 
 
-def buscar_contexto(pregunta: str, k: int = 15):
-    """Busca documentos relevantes en Chroma"""
-    import re
-    vectorstore = obtener_vectorstore()
-    
-    # Detectar si pregunta por un semestre específico
+def construir_filtro_metadata(pregunta: str) -> Optional[Dict[str, Any]]:
+    """
+    Analiza la pregunta y construye filtros de metadata dinámicamente.
+    """
     query = pregunta.lower()
-    semestre_buscado = None
+    condiciones = []
     
-    # Mapeo de palabras a números
+    # Detectar tipo de tipología (OBLIGATORIA, OPTATIVA)
+    if any(palabra in query for palabra in ["obligatoria", "obligatorias", "obligatorio", "obligatorios"]):
+        condiciones.append({"tipologia_tipo": "OBLIGATORIA"})
+    elif any(palabra in query for palabra in ["optativa", "optativas", "optativo", "optativos", "electiva", "electivas"]):
+        condiciones.append({"tipologia_tipo": "OPTATIVA"})
+    
+    # Detectar categoría de tipología (FUNDAMENTAL, DISCIPLINAR)
+    if any(palabra in query for palabra in ["fundamental", "fundamentales", "fund.", "fundamentación"]):
+        condiciones.append({"tipologia_categoria": "FUNDAMENTAL"})
+    elif any(palabra in query for palabra in ["disciplinar", "disciplinares", "disciplina"]):
+        condiciones.append({"tipologia_categoria": "DISCIPLINAR"})
+    
+    # Detectar semestre
+    semestre_buscado = None
     semestres_texto = {
         "primer": 1, "primero": 1, "1er": 1, "1ro": 1,
         "segundo": 2, "segunda": 2, "2do": 2, "2da": 2,
@@ -47,48 +58,62 @@ def buscar_contexto(pregunta: str, k: int = 15):
         "décimo": 10, "decimo": 10, "10mo": 10
     }
     
-    # Buscar número de semestre en la pregunta
     for palabra, num in semestres_texto.items():
         if palabra in query:
             semestre_buscado = num
             break
     
-    # Si no encontró palabra, buscar "semestre X" donde X es un número
     if semestre_buscado is None:
         match = re.search(r'semestre\s+(\d+)', query)
         if match:
             semestre_buscado = int(match.group(1))
     
-    # Si pregunta por un semestre específico, filtrar por ese semestre
     if semestre_buscado is not None:
-        # Obtener TODOS los documentos del vectorstore (hay 59 materias)
-        todos_resultados = vectorstore.similarity_search("materia", k=59)
-        
-        # Filtrar solo los que tienen exactamente "Semestre: X"
-        resultados_filtrados = []
-        for doc in todos_resultados:
-            contenido = doc.page_content
-            # Buscar "Semestre: X" donde X es exactamente el semestre buscado
-            # Usar regex para evitar coincidencias con "Semestre: 10" cuando busco "Semestre: 1"
-            patron = rf'Semestre: {semestre_buscado}(\s|$)'
-            if re.search(patron, contenido):
-                # Verificar que NO tenga otros semestres (si busco 1, no debe tener 10, 11, etc.)
-                if semestre_buscado < 10:
-                    # Si busco semestre 1-9, verificar que no tenga 10-99
-                    tiene_otro_semestre = re.search(rf'Semestre: ([1-9][0-9]|[2-9][0-9])(\s|$)', contenido)
-                    if not tiene_otro_semestre:
-                        resultados_filtrados.append(doc)
-                else:
-                    # Si busco semestre 10+, solo verificar que coincida exactamente
-                    resultados_filtrados.append(doc)
-        
-        # Si encontramos materias del semestre, usarlas
-        if resultados_filtrados:
-            resultados = resultados_filtrados
-        else:
-            # Si no encontramos con el filtro, usar búsqueda normal
+        condiciones.append({"semestre": str(semestre_buscado)})
+    
+    # Construir el filtro según el número de condiciones
+    if len(condiciones) == 0:
+        return None
+    elif len(condiciones) == 1:
+        return condiciones[0]
+    else:
+        return {"$and": condiciones}
+
+
+def buscar_contexto(pregunta: str, k: int = 100):
+    """
+    Busca documentos relevantes en Chroma usando filtros de metadata cuando sea posible.
+    """
+    vectorstore = obtener_vectorstore()
+    
+    # Construir filtros de metadata dinámicamente
+    filtro_metadata = construir_filtro_metadata(pregunta)
+    
+    # Si hay filtros de metadata, usarlos
+    if filtro_metadata:
+        try:
+            # Obtener documentos filtrados por metadata
+            docs_filtrados = vectorstore.get(where=filtro_metadata)
+            
+            if docs_filtrados and docs_filtrados.get('ids') and len(docs_filtrados['ids']) > 0:
+                # Si hay documentos filtrados, obtener sus textos
+                documentos_filtrados = docs_filtrados.get('documents', [])
+                metadatas_filtradas = docs_filtrados.get('metadatas', [])
+                
+                # Crear documentos LangChain
+                from langchain_core.documents import Document
+                resultados = [
+                    Document(page_content=doc, metadata=meta if meta else {})
+                    for doc, meta in zip(documentos_filtrados, metadatas_filtradas)
+                ]
+            else:
+                # Si no hay documentos, usar búsqueda semántica como fallback
+                resultados = vectorstore.similarity_search(pregunta, k=k)
+        except Exception as e:
+            # Si hay error, usar búsqueda semántica como fallback
             resultados = vectorstore.similarity_search(pregunta, k=k)
     else:
+        # Si no hay filtros, usar búsqueda semántica normal
         resultados = vectorstore.similarity_search(pregunta, k=k)
     
     # Combinar los resultados en un solo contexto
@@ -199,8 +224,8 @@ def responder_con_rag(pregunta: str):
     - Extracción programática para consultas estructuradas (más confiable)
     - LLM para consultas que requieren razonamiento
     """
-    # 1. Buscar contexto relevante
-    contexto = buscar_contexto(pregunta, k=5)
+    # 1. Buscar contexto relevante (k=100 por defecto, o todos si hay filtros)
+    contexto = buscar_contexto(pregunta, k=100)
     
     # 2. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -228,6 +253,25 @@ def responder_con_rag(pregunta: str):
             pass  # Continuar con el flujo del LLM
     
     # 3. Para consultas complejas o si la extracción falló, usar LLM
+    # Detectar tipo de pregunta
+    pregunta_lower = pregunta.lower()
+    solo_nombres = any(palabra in pregunta_lower for palabra in ["solo nombres", "solo el nombre", "solo los nombres", "solo nombre", "nombres únicamente", "únicamente nombres"])
+    es_pregunta_cantidad = any(palabra in pregunta_lower for palabra in ["cuántas", "cuantas", "cuántos", "cuantos", "cuánta", "cuanta", "cuánto", "cuanto", "número de", "numero de", "total de", "cantidad de"])
+    
+    materias_en_contexto = len(re.findall(r'Materia: ', contexto))
+    
+    instrucciones_formato = ""
+    if solo_nombres:
+        instrucciones_formato = "- IMPORTANTE: La pregunta pide SOLO los nombres de las materias. NO incluyas códigos, créditos ni tipología.\n- Lista SOLO los nombres, uno por línea o en formato de lista.\n"
+    elif es_pregunta_cantidad:
+        instrucciones_formato = f"- IMPORTANTE: La pregunta es sobre CANTIDAD/CONTEO.\n- El contexto contiene EXACTAMENTE {materias_en_contexto} materia(s).\n- Responde con el número exacto: {materias_en_contexto}.\n- Si quieres, puedes mencionar brevemente qué tipo de materias son.\n"
+    else:
+        instrucciones_formato = "- Para cada materia menciona: código, nombre, créditos y tipología.\n"
+    
+    instrucciones_listado = ""
+    if not es_pregunta_cantidad:
+        instrucciones_listado = f"- Si la pregunta es sobre listar materias, incluye TODAS las {materias_en_contexto} materia(s) del contexto sin excepción\n- NO omitas NINGUNA materia\n"
+    
     prompt = f"""Eres un asistente académico universitario. El contexto contiene información sobre materias de una carrera universitaria.
 
 CONTEXTO:
@@ -237,9 +281,8 @@ PREGUNTA: {pregunta}
 
 INSTRUCCIONES:
 - Responde de manera clara y precisa usando la información del contexto
-- Si la pregunta es sobre listar materias, incluye TODAS las que encuentres en el contexto
-- Para cada materia menciona: código, nombre, créditos y tipología
-- Si no encuentras información en el contexto, di claramente que no está disponible
+- El contexto contiene EXACTAMENTE {materias_en_contexto} materia(s)
+{instrucciones_listado}{instrucciones_formato}- Si no encuentras información en el contexto, di claramente que no está disponible
 
 RESPUESTA:"""
     
