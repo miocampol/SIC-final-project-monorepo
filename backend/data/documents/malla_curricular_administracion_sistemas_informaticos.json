@@ -4,7 +4,7 @@
     "nombre": "Fundamentos de Programación",
     "semestre": 1,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -12,7 +12,7 @@
     "nombre": "Cálculo Diferencial",
     "semestre": 1,
     "creditos": 4,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -20,7 +20,7 @@
     "nombre": "Introducción a la Administración",
     "semestre": 1,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -28,7 +28,7 @@
     "nombre": "Introducción a la Epistemología",
     "semestre": 1,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -36,7 +36,7 @@
     "nombre": "Inglés I",
     "semestre": 1,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "LENGUA EXTRANJERA"
   },
   {
@@ -44,7 +44,7 @@
     "nombre": "Programación Orientada a Objetos",
     "semestre": 2,
     "creditos": 3,
-    "prerequisitos": ["4200910"],
+    "prerequisitos": "Fundamentos de Programacion",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -52,7 +52,7 @@
     "nombre": "Teoría de la Administración y la Organización I",
     "semestre": 2,
     "creditos": 2,
-    "prerequisitos": ["4100538"],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -60,7 +60,7 @@
     "nombre": "Cálculo Integral",
     "semestre": 2,
     "creditos": 4,
-    "prerequisitos": ["1000004"],
+    "prerequisitos": "Cálculo Diferencial",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -68,7 +68,7 @@
     "nombre": "Fundamentos de Economía",
     "semestre": 2,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -76,7 +76,7 @@
     "nombre": "Inglés II",
     "semestre": 2,
     "creditos": 3,
-    "prerequisitos": ["1000044"],
+    "prerequisitos": "Inglés I",
     "tipologia": "LENGUA EXTRANJERA"
   },
   {
@@ -84,7 +84,7 @@
     "nombre": "Estructuras de Datos",
     "semestre": 3,
     "creditos": 3,
-    "prerequisitos": ["4200916"],
+    "prerequisitos": "Programacion Orientada a Objetos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -92,7 +92,7 @@
     "nombre": "Arquitectura de Computadores",
     "semestre": 3,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -100,7 +100,7 @@
     "nombre": "Estadística I",
     "semestre": 3,
     "creditos": 3,
-    "prerequisitos": ["1000005"],
+    "prerequisitos": "Cálculo Integral",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -108,7 +108,7 @@
     "nombre": "Sistemas de Información",
     "semestre": 3,
     "creditos": 3,
-    "prerequisitos": ["4200919"],
+    "prerequisitos": "Introducción a la administración de sistemas informáticos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -116,7 +116,7 @@
     "nombre": "Álgebra Lineal",
     "semestre": 3,
     "creditos": 4,
-    "prerequisitos": ["1000004"],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -124,7 +124,7 @@
     "nombre": "Inglés III",
     "semestre": 3,
     "creditos": 3,
-    "prerequisitos": ["1000045"],
+    "prerequisitos": "Inglés II",
     "tipologia": "LENGUA EXTRANJERA"
   },
   {
@@ -132,7 +132,7 @@
     "nombre": "Análisis y Diseño de Algoritmos",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["4100548"],
+    "prerequisitos": "Estructuras de Datos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -140,7 +140,7 @@
     "nombre": "Bases de Datos I",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["4100548"],
+    "prerequisitos": "Estructuras de Datos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -148,7 +148,7 @@
     "nombre": "Planeación de Sistemas de Información",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["4100550"],
+    "prerequisitos": "Sistemas de Información",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -156,7 +156,7 @@
     "nombre": "Contabilidad y Costos",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["4100539"],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -164,7 +164,7 @@
     "nombre": "Investigación de Operaciones I",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["4100578", "1000003"],
+    "prerequisitos": "Álgebra lineal",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -172,7 +172,7 @@
     "nombre": "Inglés IV",
     "semestre": 4,
     "creditos": 3,
-    "prerequisitos": ["1000046"],
+    "prerequisitos": "Inglés III",
     "tipologia": "LENGUA EXTRANJERA"
   },
   {
@@ -180,7 +180,7 @@
     "nombre": "Ingeniería de Software I",
     "semestre": 5,
     "creditos": 3,
-    "prerequisitos": ["4100549"],
+    "prerequisitos": "Análisis y Diseño de Algoritmos y Planeación de Sistemas de Información",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -188,7 +188,7 @@
     "nombre": "Programación con Tecnologías Web",
     "semestre": 5,
     "creditos": 3,
-    "prerequisitos": ["4100552"],
+    "prerequisitos": "Bases de Datos I",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -196,7 +196,7 @@
     "nombre": "Administración Financiera",
     "semestre": 5,
     "creditos": 3,
-    "prerequisitos": ["4200909"],
+    "prerequisitos": "Contabilidad y Costos",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -204,7 +204,7 @@
     "nombre": "Ingeniería de Software II",
     "semestre": 6,
     "creditos": 3,
-    "prerequisitos": ["4100553"],
+    "prerequisitos": "Ingeniería de Software I",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -212,7 +212,7 @@
     "nombre": "Sistemas Operativos",
     "semestre": 6,
     "creditos": 3,
-    "prerequisitos": ["4200908"],
+    "prerequisitos": "Arquitectura de Computadores",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -220,7 +220,7 @@
     "nombre": "Sistemas Inteligentes Computacionales",
     "semestre": 6,
     "creditos": 3,
-    "prerequisitos": ["4100549"],
+    "prerequisitos": "Haber aprobado 25 créditos (30%) del componente profesional.",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -228,7 +228,7 @@
     "nombre": "Auditoría de Sistemas I",
     "semestre": 7,
     "creditos": 3,
-    "prerequisitos": ["4100554"],
+    "prerequisitos": "Planeación de Sistemas de Información y Sistemas Operativos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -236,7 +236,7 @@
     "nombre": "Fundamentos de Redes de Datos",
     "semestre": 7,
     "creditos": 3,
-    "prerequisitos": ["4100557"],
+    "prerequisitos": "Sistemas Operativos",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -244,7 +244,7 @@
     "nombre": "Psicología Social",
     "semestre": 7,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -252,7 +252,7 @@
     "nombre": "Modelos de Gestión de Tecnologías",
     "semestre": 8,
     "creditos": 3,
-    "prerequisitos": ["4100561"],
+    "prerequisitos": "Auditoría de Sistemas I",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -260,7 +260,7 @@
     "nombre": "Formulación y Evaluación de Proyectos",
     "semestre": 8,
     "creditos": 3,
-    "prerequisitos": ["4100541", "4100591"],
+    "prerequisitos": "Administración Financiera",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -268,7 +268,7 @@
     "nombre": "Gerencia Estratégica del Talento Humano",
     "semestre": 8,
     "creditos": 2,
-    "prerequisitos": ["4100544"],
+    "prerequisitos": "Haber aprobado 100 créditos (60%) del plan de estudios",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -276,7 +276,7 @@
     "nombre": "Metodología de Investigación",
     "semestre": 8,
     "creditos": 3,
-    "prerequisitos": ["4100578"],
+    "prerequisitos": "Haber aprobado 100 créditos (60%) del plan de estudios",
     "tipologia": "FUND. OBLIGATORIA"
   },
   {
@@ -284,7 +284,7 @@
     "nombre": "Tendencias en Administración de Sistemas",
     "semestre": 8,
     "creditos": 3,
-    "prerequisitos": ["4200917"],
+    "prerequisitos": "Haber aprobado 100 créditos (60%) del plan de estudios",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -292,7 +292,7 @@
     "nombre": "Arquitectura Empresarial",
     "semestre": 9,
     "creditos": 3,
-    "prerequisitos": ["4200914"],
+    "prerequisitos": "Modelos de Gestión de Tecnologías de la Información",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -300,7 +300,7 @@
     "nombre": "Gerencia de Proyectos Tecnológicos",
     "semestre": 9,
     "creditos": 3,
-    "prerequisitos": ["4100562"],
+    "prerequisitos": "Formulación y Evaluación de Proyectos Informáticos y Gerencia Estratégica del Talento Humano",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -308,7 +308,7 @@
     "nombre": "Legislación Tecnológica",
     "semestre": 9,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Haber aprobado 25 créditos (30%) del componente profesional",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -316,7 +316,7 @@
     "nombre": "Trabajo de Grado",
     "semestre": 10,
     "creditos": 6,
-    "prerequisitos": ["4100560"],
+    "prerequisitos": "Metodología de Investigación, Haber aprobado 63 (77%) créditos exigidos en el componente profesional",
     "tipologia": "TRABAJO DE GRADO"
   },
   {
@@ -324,7 +324,7 @@
     "nombre": "Práctica",
     "semestre": 10,
     "creditos": 7,
-    "prerequisitos": ["4100563"],
+    "prerequisitos": "haber aprobado 63 (77%) créditos exigidos en el componente profesional",
     "tipologia": "DISCIPLINAR OBLIGATORIA"
   },
   {
@@ -332,7 +332,7 @@
     "nombre": "Cálculo Vectorial",
     "semestre": null,
     "creditos": 4,
-    "prerequisitos": ["1000005"],
+    "prerequisitos": "Cálculo Integral",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -340,7 +340,7 @@
     "nombre": "Ecuaciones Diferenciales",
     "semestre": null,
     "creditos": 4,
-    "prerequisitos": ["1000005"],
+    "prerequisitos": "Cálculo Integral",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -348,7 +348,7 @@
     "nombre": "Estadística II",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100578"],
+    "prerequisitos": "Estadística I",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -356,7 +356,7 @@
     "nombre": "Física Mecánica",
     "semestre": null,
     "creditos": 4,
-    "prerequisitos": ["1000004"],
+    "prerequisitos": "Cálculo Diferencial",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -364,7 +364,7 @@
     "nombre": "Investigación de Operaciones II",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100591"],
+    "prerequisitos": "Investigación de Operaciones I",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -372,7 +372,7 @@
     "nombre": "Matemáticas Discretas",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "FUND. OPTATIVA"
   },
   {
@@ -380,7 +380,7 @@
     "nombre": "Auditoría de Sistemas II",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100561"],
+    "prerequisitos": "Auditoría de Sistemas I",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -388,7 +388,7 @@
     "nombre": "Bases de Datos II",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100552"],
+    "prerequisitos": "Bases de Datos I",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -396,7 +396,7 @@
     "nombre": "Dinámica de Sistemas",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100538", "4100578"],
+    "prerequisitos": "Introducción a la Administración de Sistemas Informáticos y Estadística I",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -404,7 +404,7 @@
     "nombre": "Ingeniería de Software III",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100554"],
+    "prerequisitos": "Ingeniería de Software II",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -412,7 +412,7 @@
     "nombre": "Inteligencia de Negocios",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -420,7 +420,7 @@
     "nombre": "Minería de Datos",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -428,7 +428,7 @@
     "nombre": "Modelos de Gestión de Tecnologías de Información",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -436,7 +436,7 @@
     "nombre": "Simulación",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100591"],
+    "prerequisitos": "Investigación de Operaciones I",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -444,7 +444,7 @@
     "nombre": "Sistemas de Gestión Integral y Gestión del Conocimiento",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["20% créditos componente Disciplinar o Profesional"],
+    "prerequisitos": "20% créditos componente Disciplinar o Profesional",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -452,7 +452,7 @@
     "nombre": "Sistemas Inteligentes Computacionales",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4100548"],
+    "prerequisitos": "Estructuras de Datos",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -460,7 +460,7 @@
     "nombre": "Sociología de la Industria y el Trabajo",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": [],
+    "prerequisitos": "Ninguna",
     "tipologia": "DISCIPLINAR OPTATIVA"
   },
   {
@@ -468,7 +468,7 @@
     "nombre": "Teoría de la Administración y la Organización II",
     "semestre": null,
     "creditos": 3,
-    "prerequisitos": ["4200919"],
+    "prerequisitos": "Teoría de la Administración y la Organización I",
     "tipologia": "DISCIPLINAR OPTATIVA"
   }
 ]

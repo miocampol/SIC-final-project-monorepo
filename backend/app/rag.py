@@ -172,6 +172,32 @@ def formatear_lista_materias(materias: List[Dict[str, str]]) -> str:
     return respuesta
 
 
+def es_pregunta_academica(pregunta: str) -> bool:
+    """
+    Detecta si la pregunta es sobre temas académicos (materias, carrera, etc.)
+    o es un saludo/pregunta general.
+    """
+    query = pregunta.lower().strip()
+    
+    # Saludos comunes
+    saludos = ["hola", "hi", "hello", "buenos días", "buenas tardes", "buenas noches", 
+               "buen día", "qué tal", "que tal", "cómo estás", "como estas"]
+    
+    if query in saludos or any(saludo in query for saludo in saludos if len(query) < 20):
+        return False
+    
+    # Palabras clave que indican pregunta académica
+    palabras_academicas = [
+        "materia", "materias", "curso", "cursos", "asignatura", "asignaturas",
+        "semestre", "semestres", "carrera", "malla", "curricular", "curriculum",
+        "prerequisito", "prerequisitos", "requisito", "requisitos", "crédito", "créditos",
+        "credito", "creditos", "tipología", "tipologia", "obligatoria", "optativa",
+        "disciplinar", "fundamental", "código", "codigo"
+    ]
+    
+    return any(palabra in query for palabra in palabras_academicas)
+
+
 def es_consulta_de_listado(pregunta: str) -> Tuple[bool, Optional[int]]:
     """
     Detecta si la pregunta es una consulta simple de listado (ej: "materias del semestre X").
@@ -224,8 +250,26 @@ def responder_con_rag(pregunta: str):
     - Extracción programática para consultas estructuradas (más confiable)
     - LLM para consultas que requieren razonamiento
     """
-    # 1. Buscar contexto relevante (k=100 por defecto, o todos si hay filtros)
-    contexto = buscar_contexto(pregunta, k=100)
+    # 0. Detectar si es un saludo simple - si es así, no buscar contexto
+    if not es_pregunta_academica(pregunta):
+        # Para saludos, responder sin contexto de manera natural
+        respuesta = ollama.chat(
+            model='llama3.2',
+            messages=[{
+                'role': 'system', 
+                'content': 'Eres un asistente académico universitario amigable y profesional. Responde de manera natural y breve.'
+            }, {
+                'role': 'user', 
+                'content': pregunta
+            }]
+        )
+        return respuesta['message']['content']
+    
+    # 1. Buscar contexto relevante usando filtros de metadata cuando sea posible
+    # Si hay filtros, usar k más grande. Si no, usar k más pequeño para evitar contexto innecesario
+    filtro_metadata = construir_filtro_metadata(pregunta)
+    k = 100 if filtro_metadata else 20  # Menos contexto cuando no hay filtros específicos
+    contexto = buscar_contexto(pregunta, k=k)
     
     # 2. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -252,39 +296,32 @@ def responder_con_rag(pregunta: str):
             # Si no se pudieron extraer materias, usar LLM como fallback
             pass  # Continuar con el flujo del LLM
     
-    # 3. Para consultas complejas o si la extracción falló, usar LLM
-    # Detectar tipo de pregunta
-    pregunta_lower = pregunta.lower()
-    solo_nombres = any(palabra in pregunta_lower for palabra in ["solo nombres", "solo el nombre", "solo los nombres", "solo nombre", "nombres únicamente", "únicamente nombres"])
-    es_pregunta_cantidad = any(palabra in pregunta_lower for palabra in ["cuántas", "cuantas", "cuántos", "cuantos", "cuánta", "cuanta", "cuánto", "cuanto", "número de", "numero de", "total de", "cantidad de"])
-    
-    materias_en_contexto = len(re.findall(r'Materia: ', contexto))
-    
-    instrucciones_formato = ""
-    if solo_nombres:
-        instrucciones_formato = "- IMPORTANTE: La pregunta pide SOLO los nombres de las materias. NO incluyas códigos, créditos ni tipología.\n- Lista SOLO los nombres, uno por línea o en formato de lista.\n"
-    elif es_pregunta_cantidad:
-        instrucciones_formato = f"- IMPORTANTE: La pregunta es sobre CANTIDAD/CONTEO.\n- El contexto contiene EXACTAMENTE {materias_en_contexto} materia(s).\n- Responde con el número exacto: {materias_en_contexto}.\n- Si quieres, puedes mencionar brevemente qué tipo de materias son.\n"
-    else:
-        instrucciones_formato = "- Para cada materia menciona: código, nombre, créditos y tipología.\n"
-    
-    instrucciones_listado = ""
-    if not es_pregunta_cantidad:
-        instrucciones_listado = f"- Si la pregunta es sobre listar materias, incluye TODAS las {materias_en_contexto} materia(s) del contexto sin excepción\n- NO omitas NINGUNA materia\n"
-    
-    prompt = f"""Eres un asistente académico universitario. El contexto contiene información sobre materias de una carrera universitaria.
+    # 3. Para consultas complejas o si la extracción falló, usar LLM con prompt simple
+    template = """Eres un asistente académico experto especializado en responder preguntas sobre la malla curricular del programa de Administración de Sistemas Informáticos.
 
-CONTEXTO:
-{contexto}
+Aquí tienes información relevante sobre cursos de la malla curricular: {cursos}
 
-PREGUNTA: {pregunta}
+Cada curso tiene metadatos que incluyen: código, nombre, semestre, créditos, prerequisitos, tipología.
 
-INSTRUCCIONES:
-- Responde de manera clara y precisa usando la información del contexto
-- El contexto contiene EXACTAMENTE {materias_en_contexto} materia(s)
-{instrucciones_listado}{instrucciones_formato}- Si no encuentras información en el contexto, di claramente que no está disponible
+Responde la siguiente pregunta basándote ÚNICAMENTE en la información proporcionada: {question}
 
-RESPUESTA:"""
+INSTRUCCIONES CRÍTICAS:
+- Responde SIEMPRE en español.
+- Sé EXTREMADAMENTE CONCISO. Responde solo con la información solicitada, sin explicaciones adicionales.
+- Si la pregunta NO es sobre materias, cursos o la malla curricular, responde de manera natural sin usar la información de cursos.
+- FILTRADO POR SEMESTRE: Si la pregunta menciona un semestre específico (ej: "primer semestre", "semestre 1"), DEBES verificar el campo "semestre" en los metadatos de cada curso y SOLO incluir los cursos que tengan exactamente ese semestre. IGNORA completamente los cursos de otros semestres.
+- FILTRADO POR TIPOLOGÍA: Si la pregunta menciona una tipología (ej: "disciplinares", "obligatorias"), verifica el campo "tipologia" en los metadatos y SOLO incluye los cursos que coincidan.
+- MATERIAS CON EL MISMO NOMBRE: Si encuentras múltiples materias con el mismo nombre pero diferentes códigos, semestres o tipologías, DEBES mencionar TODAS las variantes con sus diferencias (semestre, tipología, prerrequisitos). NO elijas solo una, muestra todas las opciones.
+- Si la pregunta menciona un curso específico (ej: "Cálculo Integral"), busca ese curso. Si hay múltiples versiones, muestra todas.
+- Para preguntas sobre un curso específico, responde SOLO con la información de ese curso (o todos si hay múltiples versiones).
+- Ejemplos de respuestas correctas:
+  * Pregunta: "¿qué prerequisito tiene Cálculo Integral?" → Respuesta: "Cálculo Diferencial"
+  * Pregunta: "¿cuántos créditos tiene Cálculo Diferencial?" → Respuesta: "4 créditos"
+  * Pregunta: "¿cuáles materias son de primer semestre?" → Respuesta: Lista SOLO las materias con semestre=1
+  * Pregunta: "¿cuál es el prerrequisito de Sistemas Inteligentes Computacionales?" → Si hay dos versiones, muestra ambas con sus prerrequisitos
+- NO expliques el proceso, NO menciones códigos a menos que se pidan explícitamente, NO incluyas cursos que no cumplan los criterios de filtrado."""
+    
+    prompt = template.format(cursos=contexto, question=pregunta)
     
     respuesta = ollama.chat(
         model='llama3.2',
