@@ -1,11 +1,16 @@
 """
-Script para cargar textos en Chroma usando embeddings de Ollama con metadata
+Script para cargar textos en Chroma usando embeddings de OpenAI con metadata
 """
-from langchain_ollama import OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from procesar_json import procesar_malla_curricular
 import shutil
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # 0. Eliminar vectorstore anterior si existe (para re-cargar con metadata)
 vectorstore_path = Path("data/vectorstore")
@@ -18,11 +23,11 @@ print("📖 Procesando JSON...")
 textos, metadatas = procesar_malla_curricular("data/documents/malla_curricular_administracion_sistemas_informaticos.json")
 print(f"✅ {len(textos)} materias procesadas\n")
 
-# 2. Crear embeddings usando mxbai-embed-large
-print("🔗 Creando embeddings con mxbai-embed-large...")
-embeddings = OllamaEmbeddings(
-    model="mxbai-embed-large",
-    base_url="http://localhost:11434"
+# 2. Crear embeddings usando text-embedding-3-small de OpenAI
+print("🔗 Creando embeddings con text-embedding-3-small (OpenAI)...")
+embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
 # 3. Crear Chroma vector store con metadata
