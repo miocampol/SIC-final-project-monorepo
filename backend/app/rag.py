@@ -1,19 +1,24 @@
 """
-Módulo simple para RAG: búsqueda en Chroma + generación con Ollama
+Módulo simple para RAG: búsqueda en Chroma + generación con OpenAI
 Enfoque híbrido: extracción programática para consultas estructuradas + LLM para razonamiento
 """
-from langchain_ollama import OllamaEmbeddings, OllamaLLM
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
-import ollama
+import openai
+import os
 import re
 from typing import List, Dict, Optional, Tuple, Any
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 
 def obtener_vectorstore():
     """Carga el vector store de Chroma"""
-    embeddings = OllamaEmbeddings(
-        model="mxbai-embed-large",
-        base_url="http://localhost:11434"
+    embeddings = OpenAIEmbeddings(
+        model="text-embedding-3-small",
+        openai_api_key=os.getenv("OPENAI_API_KEY")
     )
     
     vectorstore = Chroma(
@@ -250,11 +255,15 @@ def responder_con_rag(pregunta: str):
     - Extracción programática para consultas estructuradas (más confiable)
     - LLM para consultas que requieren razonamiento
     """
+    # Inicializar el cliente de OpenAI
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    model_name = "gpt-5-mini"  # Modelo válido de OpenAI
+    
     # 0. Detectar si es un saludo simple - si es así, no buscar contexto
     if not es_pregunta_academica(pregunta):
         # Para saludos, responder sin contexto de manera natural
-        respuesta = ollama.chat(
-            model='llama3.2',
+        respuesta = client.chat.completions.create(
+            model=model_name,
             messages=[{
                 'role': 'system', 
                 'content': 'Eres un asistente académico universitario amigable y profesional. Responde de manera natural y breve.'
@@ -263,7 +272,7 @@ def responder_con_rag(pregunta: str):
                 'content': pregunta
             }]
         )
-        return respuesta['message']['content']
+        return respuesta.choices[0].message.content
     
     # 1. Buscar contexto relevante usando filtros de metadata cuando sea posible
     # Si hay filtros, usar k más grande. Si no, usar k más pequeño para evitar contexto innecesario
@@ -321,12 +330,12 @@ INSTRUCCIONES CRÍTICAS:
   * Pregunta: "¿cuál es el prerrequisito de Sistemas Inteligentes Computacionales?" → Si hay dos versiones, muestra ambas con sus prerrequisitos
 - NO expliques el proceso, NO menciones códigos a menos que se pidan explícitamente, NO incluyas cursos que no cumplan los criterios de filtrado."""
     
-    prompt = template.format(cursos=contexto, question=pregunta)
+    prompt_content = template.format(cursos=contexto, question=pregunta)
     
-    respuesta = ollama.chat(
-        model='llama3.2',
-        messages=[{'role': 'user', 'content': prompt}]
+    respuesta = client.chat.completions.create(
+        model=model_name,
+        messages=[{'role': 'user', 'content': prompt_content}]
     )
     
-    return respuesta['message']['content']
+    return respuesta.choices[0].message.content
 
