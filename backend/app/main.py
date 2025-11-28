@@ -2,6 +2,7 @@
 Aplicación principal FastAPI
 """
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.rag import responder_con_rag
 
@@ -11,6 +12,14 @@ app = FastAPI(
     version="0.1.0"
 )
 
+# Configurar CORS para permitir peticiones del frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Pregunta(BaseModel):
     pregunta: str
