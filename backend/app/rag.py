@@ -17,8 +17,7 @@ load_dotenv()
 def obtener_vectorstore():
     """Carga el vector store de Chroma"""
     embeddings = OpenAIEmbeddings(
-        model="text-embedding-3-small",
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        model="text-embedding-3-small"
     )
     
     vectorstore = Chroma(
@@ -177,12 +176,39 @@ def formatear_lista_materias(materias: List[Dict[str, str]]) -> str:
     return respuesta
 
 
+def es_pregunta_sobre_identidad(pregunta: str) -> bool:
+    """
+    Detecta si la pregunta es sobre la identidad del chatbot.
+    """
+    query = pregunta.lower().strip()
+    
+    # Patrones que indican pregunta sobre identidad
+    patrones_identidad = [
+        "quién eres", "quien eres", "quien sos", "quién sos",
+        "qué eres", "que eres", "que sos", "qué sos",
+        "cuál es tu nombre", "cual es tu nombre",
+        "de dónde eres", "de donde eres",
+        "de qué universidad", "de que universidad",
+        "qué universidad", "que universidad",
+        "de qué sede", "de que sede",
+        "qué sede", "que sede",
+        "presentate", "preséntate",
+        "dime quién eres", "dime quien eres"
+    ]
+    
+    return any(patron in query for patron in patrones_identidad)
+
+
 def es_pregunta_academica(pregunta: str) -> bool:
     """
     Detecta si la pregunta es sobre temas académicos (materias, carrera, etc.)
     o es un saludo/pregunta general.
     """
     query = pregunta.lower().strip()
+    
+    # Si es pregunta sobre identidad, no es académica
+    if es_pregunta_sobre_identidad(pregunta):
+        return False
     
     # Saludos comunes
     saludos = ["hola", "hi", "hello", "buenos días", "buenas tardes", "buenas noches", 
@@ -259,14 +285,24 @@ def responder_con_rag(pregunta: str):
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model_name = "gpt-5-mini"  # Modelo válido de OpenAI
     
-    # 0. Detectar si es un saludo simple - si es así, no buscar contexto
+    # 0. Detectar si es una pregunta sobre identidad
+    if es_pregunta_sobre_identidad(pregunta):
+        # Respuesta personalizada sobre la identidad del chatbot
+        respuesta_identidad = """Soy un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. 
+
+Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos y cualquier otra consulta relacionada con los programas académicos de la universidad.
+
+¿En qué puedo ayudarte hoy?"""
+        return respuesta_identidad
+    
+    # 1. Detectar si es un saludo simple - si es así, no buscar contexto
     if not es_pregunta_academica(pregunta):
-        # Para saludos, responder sin contexto de manera natural
+        # Para saludos, responder sin contexto de manera natural pero mencionando la universidad
         respuesta = client.chat.completions.create(
             model=model_name,
             messages=[{
                 'role': 'system', 
-                'content': 'Eres un asistente académico universitario amigable y profesional. Responde de manera natural y breve.'
+                'content': 'Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, programas académicos e información general de la universidad. Responde de manera natural y breve.'
             }, {
                 'role': 'user', 
                 'content': pregunta
@@ -305,8 +341,8 @@ def responder_con_rag(pregunta: str):
             # Si no se pudieron extraer materias, usar LLM como fallback
             pass  # Continuar con el flujo del LLM
     
-    # 3. Para consultas complejas o si la extracción falló, usar LLM con prompt simple
-    template = """Eres un asistente académico experto especializado en responder preguntas sobre la malla curricular del programa de Administración de Sistemas Informáticos.
+    # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt simple
+    template = """Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. Estás especializado en responder preguntas sobre la malla curricular y programas académicos de esta universidad.
 
 Aquí tienes información relevante sobre cursos de la malla curricular: {cursos}
 
