@@ -44,15 +44,15 @@ const InputArea = ({ onSend, disabled, hasMessages }) => {
             {!hasMessages && (
                 <div className="flex justify-center gap-4 mt-8 flex-wrap">
                     <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-prisma-surface text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-prisma-hover transition-colors">
-                        <span className="w-4 h-4 bg-emerald-400 rounded-full opacity-50"></span>
+                        <span className="w-4 h-4 bg-purple-400 rounded-full opacity-50"></span>
                         Consultar materias
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-prisma-surface text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-prisma-hover transition-colors">
-                        <span className="w-4 h-4 bg-teal-400 rounded-full opacity-50"></span>
+                        <span className="w-4 h-4 bg-violet-400 rounded-full opacity-50"></span>
                         Ver créditos
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-prisma-surface text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-prisma-hover transition-colors">
-                        <span className="w-4 h-4 bg-green-400 rounded-full opacity-50"></span>
+                        <span className="w-4 h-4 bg-fuchsia-400 rounded-full opacity-50"></span>
                         Prerrequisitos
                     </button>
                 </div>

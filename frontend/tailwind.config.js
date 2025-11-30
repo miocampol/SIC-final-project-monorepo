@@ -14,7 +14,7 @@ export default {
           hover: '#2D2E30', // Neutral hover
           text: '#E3E3E3', // Off-white text
           input: '#1E1F20', // Input background (same as surface)
-          accent: '#34d399', // Emerald accent (kept for greeting/highlights)
+          accent: '#a78bfa', // Purple accent (violet-400)
         }
       },
       keyframes: {

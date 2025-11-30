@@ -62,7 +62,7 @@ function App() {
     <div className="flex flex-col h-screen bg-white dark:bg-prisma-bg text-gray-900 dark:text-prisma-text transition-colors duration-300 font-sans">
       <Header theme={theme} toggleTheme={toggleTheme} />
 
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="flex-1 flex flex-col relative overflow-hidden pt-16">
         {messages.length > 0 ? (
           <>
             <ChatContainer messages={messages} isLoading={isLoading} />
@@ -74,7 +74,7 @@ function App() {
           <div className="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-3xl mx-auto z-20">
             <div className="mb-8 text-center">
               <h1 className="text-4xl md:text-5xl font-medium mb-2 inline-block cursor-default group">
-                <span className="bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient hover:bg-right transition-all duration-500">
+                <span className="bg-gradient-to-r from-purple-400 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient hover:bg-right transition-all duration-500">
                   Hola
                 </span>
               </h1>
