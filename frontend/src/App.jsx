@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from './components/UI/Header';
 import ChatContainer from './components/Chat/ChatContainer';
 import InputArea from './components/Chat/InputArea';
-import { sendMessage } from './services/api';
+import { sendMessageStream } from './services/api';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -23,38 +23,53 @@ function App() {
   };
 
   const handleSend = async (text) => {
-    // Add user message immediately
-    const userMessage = { role: 'user', content: text };
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
+    if (!text.trim()) return;
+
+    // Add user message
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+
+    // Add empty bot message that will be updated with streaming content
+    const botMessageIndex = messages.length + 1;
+    setMessages((prev) => [...prev, { role: 'bot', content: '' }]);
 
     try {
-      const response = await sendMessage(text);
+      const response = await sendMessageStream(text, (chunk) => {
+        // Update the bot message with each chunk
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          if (newMessages[botMessageIndex]) {
+            newMessages[botMessageIndex] = {
+              role: 'bot',
+              content: newMessages[botMessageIndex].content + chunk,
+            };
+          }
+          return newMessages;
+        });
+      });
 
       if (response.error) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'bot',
-            content: `❌ **Error**: ${response.mensaje}\n\n_${response.errorDetalle || ''}_`,
-          },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'bot', content: response.respuesta },
-        ]);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          if (newMessages[botMessageIndex]) {
+            newMessages[botMessageIndex] = {
+              role: 'bot',
+              content: `❌ **Error**: ${response.mensaje}`,
+            };
+          }
+          return newMessages;
+        });
       }
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'bot',
-          content: '❌ **Error de conexión**: No se pudo conectar con el servidor. Por favor intenta más tarde.',
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (newMessages[botMessageIndex]) {
+          newMessages[botMessageIndex] = {
+            role: 'bot',
+            content: '❌ **Error de conexión**: No se pudo conectar con el servidor. Por favor intenta más tarde.',
+          };
+        }
+        return newMessages;
+      });
     }
   };
 
