@@ -311,9 +311,9 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
         return respuesta.choices[0].message.content
     
     # 1. Buscar contexto relevante usando filtros de metadata cuando sea posible
-    # Si hay filtros, usar k más grande. Si no, usar k más pequeño para evitar contexto innecesario
+    # Optimización: reducir k para mejorar velocidad (menos contexto = más rápido)
     filtro_metadata = construir_filtro_metadata(pregunta)
-    k = 100 if filtro_metadata else 20  # Menos contexto cuando no hay filtros específicos
+    k = 50 if filtro_metadata else 10  # Reducido de 100/20 a 50/10 para mayor velocidad
     contexto = buscar_contexto(pregunta, k=k)
     
     # 2. Detectar si es una consulta de listado simple
@@ -341,43 +341,18 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             # Si no se pudieron extraer materias, usar LLM como fallback
             pass  # Continuar con el flujo del LLM
     
-    # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt simple
-    template = """Eres un asistente académico virtual amigable y profesional de la Universidad Nacional de Colombia, sede Manizales. Estás especializado en responder preguntas sobre la malla curricular y programas académicos de esta universidad.
+    # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt optimizado
+    template = """Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales.
 
-Aquí tienes información relevante sobre cursos de la malla curricular: {cursos}
+Información de cursos: {cursos}
 
-Cada curso tiene metadatos que incluyen: código, nombre, semestre, créditos, prerequisitos, tipología.
+Pregunta: {question}
 
-Responde la siguiente pregunta basándote ÚNICAMENTE en la información proporcionada: {question}
-
-REGLAS ESTRICTAS DE RESPUESTA:
-1. Responde SIEMPRE en español de manera amigable, profesional y conversacional.
-2. DEBES comenzar tus respuestas con una frase introductoria amigable antes de presentar la información.
-3. REGLA CRÍTICA - PRECISIÓN EN LA RESPUESTA:
-   - Si la pregunta menciona "descripción" o "describe", responde SOLO con la sección "Descripción:" del contexto. NO incluyas "Contenido:", "Código:", "Semestre:", ni ninguna otra información.
-   - Si la pregunta menciona "contenido", responde SOLO con la sección "Contenido:" del contexto. NO incluyas "Descripción:", "Código:", "Semestre:", ni ninguna otra información.
-   - Si la pregunta menciona "créditos", responde SOLO con los créditos. NO incluyas descripción, contenido ni otra información.
-   - Si la pregunta menciona "semestre", responde SOLO con el semestre. NO incluyas otra información.
-   - Si la pregunta menciona "prerrequisitos" o "requisitos", responde SOLO con los prerrequisitos. NO incluyas otra información.
-   - Si la pregunta es general (ej: "dame información sobre X"), puedes incluir información relevante, pero si pregunta algo específico, responde SOLO eso.
-
-4. NO agregues información que no se haya solicitado explícitamente.
-5. Si la pregunta NO es sobre materias, cursos o la malla curricular, responde de manera natural sin usar la información de cursos.
-6. FILTRADO POR SEMESTRE: Si la pregunta menciona un semestre específico, SOLO incluye cursos de ese semestre.
-7. FILTRADO POR TIPOLOGÍA: Si la pregunta menciona una tipología, SOLO incluye cursos de esa tipología.
-8. NO menciones códigos a menos que se pidan explícitamente.
-
-EJEMPLOS DE RESPUESTAS CORRECTAS:
-- Pregunta: "¿Cuál es la descripción de Fundamentos de Programación?"
-  Respuesta CORRECTA: "¡Por supuesto! Aquí tienes la descripción de Fundamentos de Programación: [SOLO el texto después de 'Descripción:' en el contexto, sin incluir 'Contenido:' ni ninguna otra sección]"
-  
-- Pregunta: "¿Cuál es el contenido de Cálculo Diferencial?"
-  Respuesta CORRECTA: "Claro, el contenido de Cálculo Diferencial es: [SOLO el texto después de 'Contenido:' en el contexto, sin incluir 'Descripción:' ni ninguna otra sección]"
-  
-- Pregunta: "¿Cuántos créditos tiene Inglés IV?"
-  Respuesta CORRECTA: "Te ayudo con eso. Inglés IV tiene [X] créditos." (solo el número de créditos, sin descripción, contenido ni otra información)
-
-RECUERDA: Si la pregunta es específica sobre una sección (descripción, contenido, créditos, etc.), extrae SOLO esa sección del contexto y responde únicamente con eso."""
+REGLAS:
+- Responde en español, amigable y conversacional. Comienza con frase introductoria.
+- PRECISIÓN: Si preguntan por "descripción", responde SOLO la sección "Descripción:" del contexto. Si preguntan por "contenido", responde SOLO "Contenido:". Si preguntan por "créditos", responde SOLO créditos. NO agregues información no solicitada.
+- Filtra por semestre/tipología si se mencionan.
+- NO menciones códigos a menos que se pidan."""
     
     prompt_content = template.format(cursos=contexto, question=pregunta)
     
@@ -386,7 +361,7 @@ RECUERDA: Si la pregunta es específica sobre una sección (descripción, conten
         messages=[
             {
                 'role': 'system',
-                'content': 'Eres un asistente académico virtual amigable y profesional. Siempre comienza tus respuestas con una frase introductoria amigable. REGLA CRÍTICA: Si preguntan por "descripción", responde SOLO con la sección Descripción del contexto, NO incluyas Contenido ni otra información. Si preguntan por "contenido", responde SOLO con la sección Contenido, NO incluyas Descripción ni otra información. Responde EXACTAMENTE lo que se pregunta, sin agregar información adicional. Sé conversacional y ayuda al usuario de manera clara y amable.'
+                'content': 'Asistente académico amigable. Comienza con frase introductoria. Responde SOLO lo que se pregunta: si preguntan por "descripción", solo Descripción; si "contenido", solo Contenido. NO agregues información extra.'
             },
             {
                 'role': 'user',
@@ -396,4 +371,123 @@ RECUERDA: Si la pregunta es específica sobre una sección (descripción, conten
     )
     
     return respuesta.choices[0].message.content
+
+
+def responder_con_rag_stream(pregunta: str):
+    """
+    Genera respuesta usando RAG con streaming (generador).
+    Retorna un generador que produce chunks de texto.
+    """
+    # Inicializar el cliente de OpenAI
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    model_name = "gpt-5-mini"  # Modelo válido de OpenAI
+    
+    # 0. Detectar si es una pregunta sobre identidad
+    if es_pregunta_sobre_identidad(pregunta):
+        # Respuesta personalizada sobre la identidad del chatbot
+        respuesta_identidad = """Soy un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. 
+
+Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos y cualquier otra consulta relacionada con los programas académicos de la universidad.
+
+¿En qué puedo ayudarte hoy?"""
+        # Simular streaming palabra por palabra para respuestas predefinidas
+        palabras = respuesta_identidad.split(' ')
+        for palabra in palabras:
+            yield palabra + ' '
+        return
+    
+    # 1. Detectar si es un saludo simple - si es así, no buscar contexto
+    if not es_pregunta_academica(pregunta):
+        # Para saludos, responder sin contexto de manera natural pero mencionando la universidad
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[{
+                'role': 'system', 
+                'content': 'Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, programas académicos e información general de la universidad. Responde de manera natural y breve.'
+            }, {
+                'role': 'user', 
+                'content': pregunta
+            }],
+            stream=True
+        )
+        
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
+        return
+    
+    # 2. Buscar contexto relevante usando filtros de metadata cuando sea posible
+    # Optimización: reducir k para mejorar velocidad
+    filtro_metadata = construir_filtro_metadata(pregunta)
+    k = 50 if filtro_metadata else 10  # Reducido para mayor velocidad
+    contexto = buscar_contexto(pregunta, k=k)
+    
+    # 3. Detectar si es una consulta de listado simple
+    es_listado, semestre = es_consulta_de_listado(pregunta)
+    
+    if es_listado:
+        # Extraer programáticamente las materias (más confiable que el LLM)
+        materias = extraer_materias_del_contexto(contexto)
+        
+        if materias:
+            # Si se detectó un semestre específico, filtrar por ese semestre
+            if semestre is not None:
+                materias_filtradas = [
+                    m for m in materias 
+                    if m['semestre'] == str(semestre)
+                ]
+                if materias_filtradas:
+                    respuesta = formatear_lista_materias(materias_filtradas)
+                    # Simular streaming palabra por palabra
+                    palabras = respuesta.split(' ')
+                    for palabra in palabras:
+                        yield palabra + ' '
+                    return
+                else:
+                    respuesta = f"No se encontraron materias para el semestre {semestre}."
+                    palabras = respuesta.split(' ')
+                    for palabra in palabras:
+                        yield palabra + ' '
+                    return
+            
+            # Si no hay filtro de semestre, devolver todas las materias encontradas
+            respuesta = formatear_lista_materias(materias)
+            palabras = respuesta.split(' ')
+            for palabra in palabras:
+                yield palabra + ' '
+            return
+    
+    # 4. Para consultas complejas, usar LLM con streaming (prompt optimizado)
+    template = """Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales.
+
+Información de cursos: {cursos}
+
+Pregunta: {question}
+
+REGLAS:
+- Responde en español, amigable y conversacional. Comienza con frase introductoria.
+- PRECISIÓN: Si preguntan por "descripción", responde SOLO la sección "Descripción:" del contexto. Si preguntan por "contenido", responde SOLO "Contenido:". Si preguntan por "créditos", responde SOLO créditos. NO agregues información no solicitada.
+- Filtra por semestre/tipología si se mencionan.
+- NO menciones códigos a menos que se pidan."""
+    
+    prompt_content = template.format(cursos=contexto, question=pregunta)
+    
+    stream = client.chat.completions.create(
+        model=model_name,
+        messages=[
+            {
+                'role': 'system',
+                'content': 'Asistente académico amigable. Comienza con frase introductoria. Responde SOLO lo que se pregunta: si preguntan por "descripción", solo Descripción; si "contenido", solo Contenido. NO agregues información extra.'
+            },
+            {
+                'role': 'user',
+                'content': prompt_content
+            }
+        ],
+        stream=True
+    )
+    
+    for chunk in stream:
+        if chunk.choices[0].delta.content is not None:
+            yield chunk.choices[0].delta.content
 
