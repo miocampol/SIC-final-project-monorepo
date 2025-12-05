@@ -4,3 +4,5 @@ langchain-community
 langchain-openai
 chromadb
 openai
+pypdf
+python-dotenv
