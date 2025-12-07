@@ -84,11 +84,32 @@ def construir_filtro_metadata(pregunta: str) -> Optional[Dict[str, Any]]:
         return {"$and": condiciones}
 
 
-def buscar_contexto(pregunta: str, k: int = 100):
+def es_consulta_especifica_materia(pregunta: str) -> bool:
+    """
+    Detecta si la pregunta es sobre una materia específica (código, créditos, etc.)
+    """
+    query = pregunta.lower()
+    palabras_especificas = [
+        "código", "codigo", "cuántos créditos", "cuantos creditos",
+        "qué créditos", "que creditos", "cuántos creditos", "cuantos creditos",
+        "semestre de", "tipología de", "tipologia de", "prerequisito de", "prerequisitos de"
+    ]
+    return any(palabra in query for palabra in palabras_especificas)
+
+
+def buscar_contexto(pregunta: str, k: Optional[int] = None):
     """
     Busca documentos relevantes en Chroma usando filtros de metadata cuando sea posible.
+    Optimizado para reducir tiempo de respuesta.
     """
     vectorstore = obtener_vectorstore()
+    
+    # Determinar k óptimo según el tipo de consulta
+    if k is None:
+        if es_consulta_especifica_materia(pregunta):
+            k = 3  # Para consultas específicas, solo necesitamos 3 documentos
+        else:
+            k = 10  # Para consultas generales, usar 10
     
     # Construir filtros de metadata dinámicamente
     filtro_metadata = construir_filtro_metadata(pregunta)
@@ -110,6 +131,10 @@ def buscar_contexto(pregunta: str, k: int = 100):
                     Document(page_content=doc, metadata=meta if meta else {})
                     for doc, meta in zip(documentos_filtrados, metadatas_filtradas)
                 ]
+                
+                # Limitar a k documentos
+                if len(resultados) > k:
+                    resultados = resultados[:k]
             else:
                 # Si no hay documentos, usar búsqueda semántica como fallback
                 resultados = vectorstore.similarity_search(pregunta, k=k)
@@ -310,11 +335,8 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
         )
         return respuesta.choices[0].message.content
     
-    # 1. Buscar contexto relevante usando filtros de metadata cuando sea posible
-    # Optimización: reducir k para mejorar velocidad (menos contexto = más rápido)
-    filtro_metadata = construir_filtro_metadata(pregunta)
-    k = 50 if filtro_metadata else 10  # Reducido de 100/20 a 50/10 para mayor velocidad
-    contexto = buscar_contexto(pregunta, k=k)
+    # 1. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
+    contexto = buscar_contexto(pregunta)
     
     # 2. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -342,26 +364,19 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             pass  # Continuar con el flujo del LLM
     
     # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt optimizado
-    template = """Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales.
+    # Prompt más corto para reducir tokens y tiempo de procesamiento
+    prompt_content = f"""Información: {contexto}
 
-Información de cursos: {cursos}
+Pregunta: {pregunta}
 
-Pregunta: {question}
-
-REGLAS:
-- Responde en español, amigable y conversacional. Comienza con frase introductoria.
-- PRECISIÓN: Si preguntan por "descripción", responde SOLO la sección "Descripción:" del contexto. Si preguntan por "contenido", responde SOLO "Contenido:". Si preguntan por "créditos", responde SOLO créditos. NO agregues información no solicitada.
-- Filtra por semestre/tipología si se mencionan.
-- NO menciones códigos a menos que se pidan."""
-    
-    prompt_content = template.format(cursos=contexto, question=pregunta)
+Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. Si preguntan por créditos, da solo los créditos."""
     
     respuesta = client.chat.completions.create(
         model=model_name,
         messages=[
             {
                 'role': 'system',
-                'content': 'Asistente académico amigable. Comienza con frase introductoria. Responde SOLO lo que se pregunta: si preguntan por "descripción", solo Descripción; si "contenido", solo Contenido. NO agregues información extra.'
+                'content': 'Asistente académico. Responde SOLO lo que se pregunta. Sé conciso.'
             },
             {
                 'role': 'user',
@@ -416,11 +431,8 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
                 yield chunk.choices[0].delta.content
         return
     
-    # 2. Buscar contexto relevante usando filtros de metadata cuando sea posible
-    # Optimización: reducir k para mejorar velocidad
-    filtro_metadata = construir_filtro_metadata(pregunta)
-    k = 50 if filtro_metadata else 10  # Reducido para mayor velocidad
-    contexto = buscar_contexto(pregunta, k=k)
+    # 2. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
+    contexto = buscar_contexto(pregunta)
     
     # 3. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -458,26 +470,19 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             return
     
     # 4. Para consultas complejas, usar LLM con streaming (prompt optimizado)
-    template = """Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales.
+    # Prompt más corto para reducir tokens y tiempo de procesamiento
+    prompt_content = f"""Información: {contexto}
 
-Información de cursos: {cursos}
+Pregunta: {pregunta}
 
-Pregunta: {question}
-
-REGLAS:
-- Responde en español, amigable y conversacional. Comienza con frase introductoria.
-- PRECISIÓN: Si preguntan por "descripción", responde SOLO la sección "Descripción:" del contexto. Si preguntan por "contenido", responde SOLO "Contenido:". Si preguntan por "créditos", responde SOLO créditos. NO agregues información no solicitada.
-- Filtra por semestre/tipología si se mencionan.
-- NO menciones códigos a menos que se pidan."""
-    
-    prompt_content = template.format(cursos=contexto, question=pregunta)
+Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. Si preguntan por créditos, da solo los créditos."""
     
     stream = client.chat.completions.create(
         model=model_name,
         messages=[
             {
                 'role': 'system',
-                'content': 'Asistente académico amigable. Comienza con frase introductoria. Responde SOLO lo que se pregunta: si preguntan por "descripción", solo Descripción; si "contenido", solo Contenido. NO agregues información extra.'
+                'content': 'Asistente académico. Responde SOLO lo que se pregunta. Sé conciso.'
             },
             {
                 'role': 'user',
