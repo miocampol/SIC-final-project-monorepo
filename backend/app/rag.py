@@ -13,19 +13,25 @@ from dotenv import load_dotenv
 # Cargar variables de entorno
 load_dotenv()
 
+# Caché global del vectorstore para evitar recrearlo en cada llamada
+_vectorstore_cache = None
+
 
 def obtener_vectorstore():
-    """Carga el vector store de Chroma"""
-    embeddings = OpenAIEmbeddings(
-        model="text-embedding-3-small"
-    )
+    """Carga el vector store de Chroma (con caché)"""
+    global _vectorstore_cache
     
-    vectorstore = Chroma(
-        persist_directory="data/vectorstore",
-        embedding_function=embeddings
-    )
+    if _vectorstore_cache is None:
+        embeddings = OpenAIEmbeddings(
+            model="text-embedding-3-small"
+        )
+        
+        _vectorstore_cache = Chroma(
+            persist_directory="data/vectorstore",
+            embedding_function=embeddings
+        )
     
-    return vectorstore
+    return _vectorstore_cache
 
 
 def construir_filtro_metadata(pregunta: str) -> Optional[Dict[str, Any]]:
@@ -97,6 +103,75 @@ def es_consulta_especifica_materia(pregunta: str) -> bool:
     return any(palabra in query for palabra in palabras_especificas)
 
 
+def extraer_nombre_materia_de_pregunta(pregunta: str) -> Optional[str]:
+    """
+    Intenta extraer el nombre de una materia de la pregunta.
+    Busca patrones como "código de X", "créditos de X", etc.
+    """
+    # Patrones comunes: "código de [MATERIA]", "créditos de [MATERIA]", etc.
+    patrones = [
+        r'(?:código|codigo|créditos|creditos|semestre|tipología|tipologia|prerequisito|prerequisitos)\s+(?:de|del|de la|del la)\s+(.+?)(?:\?|$|\.)',
+        r'(?:cuál|cuál es|que|qué es)\s+(?:el|la)\s+(?:código|codigo|créditos|creditos)\s+(?:de|del|de la)\s+(.+?)(?:\?|$|\.)',
+    ]
+    
+    for patron in patrones:
+        match = re.search(patron, pregunta, re.IGNORECASE)
+        if match:
+            nombre = match.group(1).strip()
+            # Limpiar el nombre (quitar palabras comunes al final)
+            nombre = re.sub(r'\s+(materia|asignatura|curso)$', '', nombre, flags=re.IGNORECASE)
+            if len(nombre) > 3:  # Asegurar que tiene sentido
+                return nombre
+    
+    return None
+
+
+def extraer_info_especifica_del_contexto(contexto: str, pregunta: str) -> Optional[str]:
+    """
+    Extrae información específica (código, créditos) del contexto sin usar LLM.
+    Retorna None si no puede extraer programáticamente.
+    """
+    query = pregunta.lower()
+    
+    # Extraer materias del contexto
+    materias = extraer_materias_del_contexto(contexto)
+    
+    if not materias:
+        return None
+    
+    # Si hay solo una materia, usar esa
+    if len(materias) == 1:
+        materia = materias[0]
+    else:
+        # Intentar encontrar la materia por nombre
+        nombre_buscado = extraer_nombre_materia_de_pregunta(pregunta)
+        if nombre_buscado:
+            # Buscar materia que coincida con el nombre
+            for m in materias:
+                if nombre_buscado.lower() in m['nombre'].lower() or m['nombre'].lower() in nombre_buscado.lower():
+                    materia = m
+                    break
+            else:
+                # Si no se encuentra, usar la primera
+                materia = materias[0]
+        else:
+            materia = materias[0]
+    
+    # Extraer la información solicitada
+    if "código" in query or "codigo" in query:
+        return materia.get('codigo', 'No disponible')
+    elif "créditos" in query or "creditos" in query:
+        return materia.get('creditos', 'No disponible')
+    elif "semestre" in query:
+        return materia.get('semestre', 'No disponible')
+    elif "tipología" in query or "tipologia" in query:
+        return materia.get('tipologia', 'No disponible')
+    elif "prerequisito" in query:
+        return materia.get('prerequisitos', 'Ninguno')
+    
+    return None
+
+
 def buscar_contexto(pregunta: str, k: Optional[int] = None):
     """
     Busca documentos relevantes en Chroma usando filtros de metadata cuando sea posible.
@@ -107,7 +182,11 @@ def buscar_contexto(pregunta: str, k: Optional[int] = None):
     # Determinar k óptimo según el tipo de consulta
     if k is None:
         if es_consulta_especifica_materia(pregunta):
-            k = 3  # Para consultas específicas, solo necesitamos 3 documentos
+            # Si hay un nombre de materia específico, usar k=1 o k=2
+            if extraer_nombre_materia_de_pregunta(pregunta):
+                k = 2  # Para consultas muy específicas con nombre de materia
+            else:
+                k = 3  # Para consultas específicas sin nombre claro
         else:
             k = 10  # Para consultas generales, usar 10
     
@@ -338,6 +417,12 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
     # 1. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
     contexto = buscar_contexto(pregunta)
     
+    # 1.5. Intentar extracción programática directa para consultas específicas (evita LLM)
+    if es_consulta_especifica_materia(pregunta):
+        info_extraida = extraer_info_especifica_del_contexto(contexto, pregunta)
+        if info_extraida and info_extraida != 'No disponible':
+            return info_extraida
+    
     # 2. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
     
@@ -433,6 +518,16 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
     
     # 2. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
     contexto = buscar_contexto(pregunta)
+    
+    # 2.5. Intentar extracción programática directa para consultas específicas (evita LLM)
+    if es_consulta_especifica_materia(pregunta):
+        info_extraida = extraer_info_especifica_del_contexto(contexto, pregunta)
+        if info_extraida and info_extraida != 'No disponible':
+            # Simular streaming palabra por palabra
+            palabras = info_extraida.split(' ')
+            for palabra in palabras:
+                yield palabra + ' '
+            return
     
     # 3. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
