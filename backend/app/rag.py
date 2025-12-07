@@ -7,8 +7,13 @@ from langchain_community.vectorstores import Chroma
 import openai
 import os
 import re
+import logging
 from typing import List, Dict, Optional, Tuple, Any
 from dotenv import load_dotenv
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cargar variables de entorno
 load_dotenv()
@@ -135,8 +140,10 @@ def extraer_info_especifica_del_contexto(contexto: str, pregunta: str) -> Option
     
     # Extraer materias del contexto
     materias = extraer_materias_del_contexto(contexto)
+    logger.info(f"📝 Materias extraídas del contexto: {len(materias)}")
     
     if not materias:
+        logger.warning("⚠️ No se pudieron extraer materias del contexto")
         return None
     
     # Si hay solo una materia, usar esa
@@ -159,16 +166,27 @@ def extraer_info_especifica_del_contexto(contexto: str, pregunta: str) -> Option
     
     # Extraer la información solicitada
     if "código" in query or "codigo" in query:
-        return materia.get('codigo', 'No disponible')
+        codigo = materia.get('codigo', 'No disponible')
+        logger.info(f"✅ Código extraído: {codigo} de materia: {materia.get('nombre', 'N/A')}")
+        return codigo
     elif "créditos" in query or "creditos" in query:
-        return materia.get('creditos', 'No disponible')
+        creditos = materia.get('creditos', 'No disponible')
+        logger.info(f"✅ Créditos extraídos: {creditos} de materia: {materia.get('nombre', 'N/A')}")
+        return creditos
     elif "semestre" in query:
-        return materia.get('semestre', 'No disponible')
+        semestre = materia.get('semestre', 'No disponible')
+        logger.info(f"✅ Semestre extraído: {semestre} de materia: {materia.get('nombre', 'N/A')}")
+        return semestre
     elif "tipología" in query or "tipologia" in query:
-        return materia.get('tipologia', 'No disponible')
+        tipologia = materia.get('tipologia', 'No disponible')
+        logger.info(f"✅ Tipología extraída: {tipologia} de materia: {materia.get('nombre', 'N/A')}")
+        return tipologia
     elif "prerequisito" in query:
-        return materia.get('prerequisitos', 'Ninguno')
+        prerequisitos = materia.get('prerequisitos', 'Ninguno')
+        logger.info(f"✅ Prerequisitos extraídos: {prerequisitos} de materia: {materia.get('nombre', 'N/A')}")
+        return prerequisitos
     
+    logger.warning("⚠️ No se pudo determinar qué información extraer de la pregunta")
     return None
 
 
@@ -183,12 +201,16 @@ def buscar_contexto(pregunta: str, k: Optional[int] = None):
     if k is None:
         if es_consulta_especifica_materia(pregunta):
             # Si hay un nombre de materia específico, usar k=1 o k=2
-            if extraer_nombre_materia_de_pregunta(pregunta):
+            nombre_materia = extraer_nombre_materia_de_pregunta(pregunta)
+            if nombre_materia:
                 k = 2  # Para consultas muy específicas con nombre de materia
+                logger.info(f"🎯 Consulta específica detectada con materia '{nombre_materia}', usando k=2")
             else:
                 k = 3  # Para consultas específicas sin nombre claro
+                logger.info("🎯 Consulta específica detectada sin nombre claro, usando k=3")
         else:
             k = 10  # Para consultas generales, usar 10
+            logger.info("📋 Consulta general detectada, usando k=10")
     
     # Construir filtros de metadata dinámicamente
     filtro_metadata = construir_filtro_metadata(pregunta)
@@ -416,12 +438,17 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
     
     # 1. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
     contexto = buscar_contexto(pregunta)
+    logger.info(f"📚 Contexto obtenido: {len(contexto)} caracteres")
     
     # 1.5. Intentar extracción programática directa para consultas específicas (evita LLM)
     if es_consulta_especifica_materia(pregunta):
+        logger.info("🔍 Detectada consulta específica, intentando extracción programática...")
         info_extraida = extraer_info_especifica_del_contexto(contexto, pregunta)
         if info_extraida and info_extraida != 'No disponible':
+            logger.info(f"✅ Extracción programática exitosa (sin LLM): {info_extraida}")
             return info_extraida
+        else:
+            logger.info("⚠️ Extracción programática falló, usando LLM como fallback")
     
     # 2. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -449,6 +476,7 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             pass  # Continuar con el flujo del LLM
     
     # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt optimizado
+    logger.info("🤖 Usando LLM para generar respuesta...")
     # Prompt más corto para reducir tokens y tiempo de procesamiento
     prompt_content = f"""Información: {contexto}
 
@@ -518,16 +546,21 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
     
     # 2. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
     contexto = buscar_contexto(pregunta)
+    logger.info(f"📚 Contexto obtenido: {len(contexto)} caracteres")
     
     # 2.5. Intentar extracción programática directa para consultas específicas (evita LLM)
     if es_consulta_especifica_materia(pregunta):
+        logger.info("🔍 Detectada consulta específica, intentando extracción programática...")
         info_extraida = extraer_info_especifica_del_contexto(contexto, pregunta)
         if info_extraida and info_extraida != 'No disponible':
+            logger.info(f"✅ Extracción programática exitosa (sin LLM): {info_extraida}")
             # Simular streaming palabra por palabra
             palabras = info_extraida.split(' ')
             for palabra in palabras:
                 yield palabra + ' '
             return
+        else:
+            logger.info("⚠️ Extracción programática falló, usando LLM como fallback")
     
     # 3. Detectar si es una consulta de listado simple
     es_listado, semestre = es_consulta_de_listado(pregunta)
@@ -565,6 +598,7 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             return
     
     # 4. Para consultas complejas, usar LLM con streaming (prompt optimizado)
+    logger.info("🤖 Usando LLM para generar respuesta (streaming)...")
     # Prompt más corto para reducir tokens y tiempo de procesamiento
     prompt_content = f"""Información: {contexto}
 
