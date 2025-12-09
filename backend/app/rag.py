@@ -509,17 +509,7 @@ def responder_con_rag(pregunta: str):
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model_name = "gpt-5-mini"  # Modelo válido de OpenAI
     
-    # 0. Detectar si es una pregunta sobre identidad
-    if es_pregunta_sobre_identidad(pregunta):
-        # Respuesta personalizada sobre la identidad del chatbot
-        respuesta_identidad = """Hola, soy prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales.
-
-Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos, horarios, profesores y cualquier otra consulta relacionada con el programa académico.
-
-¿En qué puedo ayudarte hoy?"""
-        return respuesta_identidad
-    
-    # 1. Detectar si es un saludo simple - si es así, no buscar contexto
+    # 0. Detectar si es un saludo simple - si es así, no buscar contexto
     if not es_pregunta_academica(pregunta):
         # Para saludos, responder sin contexto de manera natural pero mencionando la universidad
         respuesta = client.chat.completions.create(
@@ -616,21 +606,7 @@ def responder_con_rag_stream(pregunta: str):
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model_name = "gpt-5-mini"  # Modelo válido de OpenAI
     
-    # 0. Detectar si es una pregunta sobre identidad
-    if es_pregunta_sobre_identidad(pregunta):
-        # Respuesta personalizada sobre la identidad del chatbot
-        respuesta_identidad = """Hola, soy prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales.
-
-Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos, horarios, profesores y cualquier otra consulta relacionada con el programa académico.
-
-¿En qué puedo ayudarte hoy?"""
-        # Simular streaming palabra por palabra para respuestas predefinidas
-        palabras = respuesta_identidad.split(' ')
-        for palabra in palabras:
-            yield palabra + ' '
-        return
-    
-    # 1. Detectar si es un saludo simple - si es así, no buscar contexto
+    # 0. Detectar si es un saludo simple - si es así, no buscar contexto
     if not es_pregunta_academica(pregunta):
         # Para saludos, responder sin contexto de manera natural pero mencionando la universidad
         stream = client.chat.completions.create(
