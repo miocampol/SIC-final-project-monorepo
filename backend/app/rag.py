@@ -101,9 +101,13 @@ def es_consulta_especifica_materia(pregunta: str) -> bool:
     """
     query = pregunta.lower()
     palabras_especificas = [
-        "código", "codigo", "cuántos créditos", "cuantos creditos",
-        "qué créditos", "que creditos", "cuántos creditos", "cuantos creditos",
-        "semestre de", "tipología de", "tipologia de", "prerequisito de", "prerequisitos de"
+        "código", "codigo", 
+        "cuántos créditos", "cuantos creditos", "cuántos creditos", "cuantos creditos",
+        "qué créditos", "que creditos", "qué creditos", "que creditos",
+        "créditos tiene", "creditos tiene", "créditos de", "creditos de",
+        "semestre de", "semestre tiene",
+        "tipología de", "tipologia de", "tipología tiene", "tipologia tiene",
+        "prerequisito de", "prerequisitos de", "prerequisito tiene", "prerequisitos tiene"
     ]
     return any(palabra in query for palabra in palabras_especificas)
 
@@ -111,12 +115,14 @@ def es_consulta_especifica_materia(pregunta: str) -> bool:
 def extraer_nombre_materia_de_pregunta(pregunta: str) -> Optional[str]:
     """
     Intenta extraer el nombre de una materia de la pregunta.
-    Busca patrones como "código de X", "créditos de X", etc.
+    Busca patrones como "código de X", "créditos de X", "créditos tiene X", etc.
     """
-    # Patrones comunes: "código de [MATERIA]", "créditos de [MATERIA]", etc.
+    # Patrones comunes: "código de [MATERIA]", "créditos de [MATERIA]", "créditos tiene [MATERIA]", etc.
     patrones = [
         r'(?:código|codigo|créditos|creditos|semestre|tipología|tipologia|prerequisito|prerequisitos)\s+(?:de|del|de la|del la)\s+(.+?)(?:\?|$|\.)',
         r'(?:cuál|cuál es|que|qué es)\s+(?:el|la)\s+(?:código|codigo|créditos|creditos)\s+(?:de|del|de la)\s+(.+?)(?:\?|$|\.)',
+        r'(?:cuántos|cuantos|cuántas|cuantas)\s+(?:créditos|creditos)\s+(?:tiene|tienen)\s+(?:la\s+)?(?:materia|asignatura|curso)?\s*(.+?)(?:\?|$|\.)',
+        r'(?:créditos|creditos)\s+(?:tiene|tienen)\s+(?:la\s+)?(?:materia|asignatura|curso)?\s*(.+?)(?:\?|$|\.)',
     ]
     
     for patron in patrones:
@@ -370,6 +376,19 @@ def es_consulta_sobre_cantidad(pregunta: str) -> Tuple[bool, Optional[Dict[str, 
     Retorna (es_consulta_cantidad, filtros) donde filtros contiene el tipo de materias buscadas.
     """
     query = pregunta.lower()
+    
+    # EXCLUIR: Si la pregunta es sobre créditos/código/semestre/etc. de una materia específica,
+    # NO es una consulta sobre cantidad de materias
+    palabras_excluir = [
+        "créditos tiene", "creditos tiene", "créditos de", "creditos de",
+        "código de", "codigo de", "código tiene", "codigo tiene",
+        "semestre de", "semestre tiene", "tipología de", "tipologia de",
+        "prerequisito de", "prerequisitos de"
+    ]
+    
+    # Si contiene alguna de estas palabras, NO es consulta sobre cantidad
+    if any(palabra in query for palabra in palabras_excluir):
+        return False, None
     
     # Palabras clave que indican pregunta sobre cantidad
     palabras_cantidad = [
