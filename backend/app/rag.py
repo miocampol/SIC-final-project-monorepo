@@ -512,9 +512,9 @@ def responder_con_rag(pregunta: str):
     # 0. Detectar si es una pregunta sobre identidad
     if es_pregunta_sobre_identidad(pregunta):
         # Respuesta personalizada sobre la identidad del chatbot
-        respuesta_identidad = """Soy un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. 
+        respuesta_identidad = """Hola, soy prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales.
 
-Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos y cualquier otra consulta relacionada con los programas académicos de la universidad.
+Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos, horarios, profesores y cualquier otra consulta relacionada con el programa académico.
 
 ¿En qué puedo ayudarte hoy?"""
         return respuesta_identidad
@@ -526,7 +526,7 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             model=model_name,
             messages=[{
                 'role': 'system', 
-                'content': 'Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, programas académicos e información general de la universidad. Responde de manera natural y breve.'
+                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera natural y breve.'
             }, {
                 'role': 'user', 
                 'content': pregunta
@@ -595,7 +595,7 @@ Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. 
         messages=[
             {
                 'role': 'system',
-                'content': 'Asistente académico. Responde SOLO lo que se pregunta. Sé conciso.'
+                'content': 'Eres prismaUNAL, asistente virtual de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde SOLO lo que se pregunta. Sé conciso.'
             },
             {
                 'role': 'user',
@@ -619,9 +619,9 @@ def responder_con_rag_stream(pregunta: str):
     # 0. Detectar si es una pregunta sobre identidad
     if es_pregunta_sobre_identidad(pregunta):
         # Respuesta personalizada sobre la identidad del chatbot
-        respuesta_identidad = """Soy un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. 
+        respuesta_identidad = """Hola, soy prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales.
 
-Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos y cualquier otra consulta relacionada con los programas académicos de la universidad.
+Estoy aquí para ayudarte con información sobre la malla curricular, materias, semestres, créditos, prerrequisitos, horarios, profesores y cualquier otra consulta relacionada con el programa académico.
 
 ¿En qué puedo ayudarte hoy?"""
         # Simular streaming palabra por palabra para respuestas predefinidas
@@ -637,7 +637,7 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
             model=model_name,
             messages=[{
                 'role': 'system', 
-                'content': 'Eres un asistente académico virtual de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, programas académicos e información general de la universidad. Responde de manera natural y breve.'
+                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera natural y breve.'
             }, {
                 'role': 'user', 
                 'content': pregunta
@@ -729,7 +729,7 @@ Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. 
         messages=[
             {
                 'role': 'system',
-                'content': 'Asistente académico. Responde SOLO lo que se pregunta. Sé conciso.'
+                'content': 'Eres prismaUNAL, asistente virtual de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde SOLO lo que se pregunta. Sé conciso.'
             },
             {
                 'role': 'user',
