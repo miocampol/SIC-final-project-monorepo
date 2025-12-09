@@ -197,6 +197,9 @@ def buscar_contexto(pregunta: str, k: Optional[int] = None):
     """
     vectorstore = obtener_vectorstore()
     
+    # Detectar si es una consulta de listado (necesita todos los resultados)
+    es_listado, _ = es_consulta_de_listado(pregunta)
+    
     # Determinar k óptimo según el tipo de consulta
     if k is None:
         if es_consulta_especifica_materia(pregunta):
@@ -233,13 +236,19 @@ def buscar_contexto(pregunta: str, k: Optional[int] = None):
                     for doc, meta in zip(documentos_filtrados, metadatas_filtradas)
                 ]
                 
-                # Limitar a k documentos
-                if len(resultados) > k:
+                # Si es una consulta de listado, devolver TODOS los documentos filtrados
+                # Si no, limitar a k documentos
+                if not es_listado and len(resultados) > k:
+                    logger.info(f"📊 Limitando resultados de {len(resultados)} a {k} documentos (no es listado)")
                     resultados = resultados[:k]
+                else:
+                    logger.info(f"📊 Consulta de listado detectada: devolviendo TODOS los {len(resultados)} documentos filtrados")
             else:
                 # Si no hay documentos, usar búsqueda semántica como fallback
+                logger.warning("⚠️ No se encontraron documentos con el filtro de metadata, usando búsqueda semántica")
                 resultados = vectorstore.similarity_search(pregunta, k=k)
         except Exception as e:
+            logger.error(f"❌ Error al filtrar por metadata: {e}, usando búsqueda semántica")
             # Si hay error, usar búsqueda semántica como fallback
             resultados = vectorstore.similarity_search(pregunta, k=k)
     else:
@@ -355,6 +364,94 @@ def es_pregunta_academica(pregunta: str) -> bool:
     return any(palabra in query for palabra in palabras_academicas)
 
 
+def es_consulta_sobre_cantidad(pregunta: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    """
+    Detecta si la pregunta es sobre la cantidad de materias.
+    Retorna (es_consulta_cantidad, filtros) donde filtros contiene el tipo de materias buscadas.
+    """
+    query = pregunta.lower()
+    
+    # Palabras clave que indican pregunta sobre cantidad
+    palabras_cantidad = [
+        "cuántas", "cuantas", "cuántos", "cuantos",
+        "cuántas materias", "cuantas materias", "cuántos cursos", "cuantos cursos",
+        "cuántas asignaturas", "cuantas asignaturas", "total de materias"
+    ]
+    
+    es_cantidad = any(palabra in query for palabra in palabras_cantidad)
+    
+    if not es_cantidad:
+        return False, None
+    
+    # Detectar filtros
+    filtros = {}
+    
+    # Tipo de tipología
+    if any(palabra in query for palabra in ["obligatoria", "obligatorias", "obligatorio", "obligatorios"]):
+        filtros['tipo'] = "OBLIGATORIA"
+    elif any(palabra in query for palabra in ["optativa", "optativas", "optativo", "optativos", "electiva", "electivas"]):
+        filtros['tipo'] = "OPTATIVA"
+    
+    # Categoría de tipología
+    if any(palabra in query for palabra in ["fundamental", "fundamentales", "fund.", "fundamentación"]):
+        filtros['categoria'] = "FUNDAMENTAL"
+    elif any(palabra in query for palabra in ["disciplinar", "disciplinares", "disciplina"]):
+        filtros['categoria'] = "DISCIPLINAR"
+    elif any(palabra in query for palabra in ["lengua extranjera", "lengua", "idioma"]):
+        filtros['categoria'] = "LENGUA EXTRANJERA"
+    elif any(palabra in query for palabra in ["trabajo de grado", "trabajo grado"]):
+        filtros['categoria'] = "TRABAJO DE GRADO"
+    
+    return True, filtros
+
+
+def responder_cantidad_materias(filtros: Dict[str, Any]) -> str:
+    """
+    Responde con la cantidad de materias según los filtros proporcionados.
+    Usa números predefinidos para mayor precisión.
+    """
+    # Números predefinidos
+    total_materias = 54  # Sin contar electivas (aunque esto incluye todo)
+    fundamentales_obligatorias = 15
+    fundamentales_optativas = 6
+    disciplinares_obligatorias = 21
+    disciplinares_optativas = 7
+    lengua_extranjera = 4
+    trabajo_grado = 1
+    
+    tipo = filtros.get('tipo')
+    categoria = filtros.get('categoria')
+    
+    # Casos específicos
+    if categoria == "FUNDAMENTAL" and tipo == "OBLIGATORIA":
+        return f"Hay {fundamentales_obligatorias} materias fundamentales obligatorias."
+    elif categoria == "FUNDAMENTAL" and tipo == "OPTATIVA":
+        return f"Hay {fundamentales_optativas} materias fundamentales optativas."
+    elif categoria == "DISCIPLINAR" and tipo == "OBLIGATORIA":
+        return f"Hay {disciplinares_obligatorias} materias disciplinares obligatorias."
+    elif categoria == "DISCIPLINAR" and tipo == "OPTATIVA":
+        return f"Hay {disciplinares_optativas} materias disciplinares optativas."
+    elif categoria == "LENGUA EXTRANJERA":
+        return f"Hay {lengua_extranjera} materias de lengua extranjera."
+    elif categoria == "TRABAJO DE GRADO":
+        return f"Hay {trabajo_grado} materia de trabajo de grado."
+    elif categoria == "FUNDAMENTAL":
+        total = fundamentales_obligatorias + fundamentales_optativas
+        return f"Hay {total} materias fundamentales en total ({fundamentales_obligatorias} obligatorias y {fundamentales_optativas} optativas)."
+    elif categoria == "DISCIPLINAR":
+        total = disciplinares_obligatorias + disciplinares_optativas
+        return f"Hay {total} materias disciplinares en total ({disciplinares_obligatorias} obligatorias y {disciplinares_optativas} optativas)."
+    elif tipo == "OBLIGATORIA":
+        total = fundamentales_obligatorias + disciplinares_obligatorias
+        return f"Hay {total} materias obligatorias en total ({fundamentales_obligatorias} fundamentales y {disciplinares_obligatorias} disciplinares)."
+    elif tipo == "OPTATIVA":
+        total = fundamentales_optativas + disciplinares_optativas
+        return f"Hay {total} materias optativas en total ({fundamentales_optativas} fundamentales y {disciplinares_optativas} disciplinares)."
+    else:
+        # Total general (sin contar electivas según el usuario, pero el total es 54)
+        return f"Hay {total_materias} materias en total en la malla curricular (sin contar electivas)."
+
+
 def es_consulta_de_listado(pregunta: str) -> Tuple[bool, Optional[int]]:
     """
     Detecta si la pregunta es una consulta simple de listado (ej: "materias del semestre X").
@@ -367,8 +464,9 @@ def es_consulta_de_listado(pregunta: str) -> Tuple[bool, Optional[int]]:
     # Palabras clave que indican listado
     palabras_listado = [
         "qué materias", "que materias", "cuáles materias", "cuales materias",
+        "cuáles son las materias", "cuales son las materias", "cuáles son", "cuales son",
         "lista", "listar", "materias del", "materias de", "materias en",
-        "materias que hay", "materias que tiene"
+        "materias que hay", "materias que tiene", "materias que son"
     ]
     
     es_listado = any(palabra in query for palabra in palabras_listado)
@@ -436,11 +534,19 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
         )
         return respuesta.choices[0].message.content
     
-    # 1. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
+    # 1. Detectar si es una pregunta sobre cantidad de materias
+    es_cantidad, filtros_cantidad = es_consulta_sobre_cantidad(pregunta)
+    if es_cantidad and filtros_cantidad is not None:
+        logger.info(f"🔢 Consulta sobre cantidad detectada con filtros: {filtros_cantidad}")
+        respuesta = responder_cantidad_materias(filtros_cantidad)
+        logger.info(f"✅ Respuesta predefinida: {respuesta}")
+        return respuesta
+    
+    # 2. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
     contexto = buscar_contexto(pregunta)
     logger.info(f"📚 Contexto obtenido: {len(contexto)} caracteres")
     
-    # 1.5. Intentar extracción programática directa para consultas específicas (evita LLM)
+    # 2.5. Intentar extracción programática directa para consultas específicas (evita LLM)
     if es_consulta_especifica_materia(pregunta):
         logger.info("🔍 Detectada consulta específica, intentando extracción programática...")
         info_extraida = extraer_info_especifica_del_contexto(contexto, pregunta)
@@ -542,6 +648,18 @@ Estoy aquí para ayudarte con información sobre la malla curricular, materias, 
         for chunk in stream:
             if chunk.choices[0].delta.content is not None:
                 yield chunk.choices[0].delta.content
+        return
+    
+    # 1. Detectar si es una pregunta sobre cantidad de materias
+    es_cantidad, filtros_cantidad = es_consulta_sobre_cantidad(pregunta)
+    if es_cantidad and filtros_cantidad is not None:
+        logger.info(f"🔢 Consulta sobre cantidad detectada con filtros: {filtros_cantidad}")
+        respuesta = responder_cantidad_materias(filtros_cantidad)
+        logger.info(f"✅ Respuesta predefinida: {respuesta}")
+        # Simular streaming palabra por palabra
+        palabras = respuesta.split(' ')
+        for palabra in palabras:
+            yield palabra + ' '
         return
     
     # 2. Buscar contexto relevante (k se calcula automáticamente según el tipo de consulta)
