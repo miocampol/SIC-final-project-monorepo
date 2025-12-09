@@ -1,11 +1,12 @@
 """
 Script para cargar textos en Chroma usando embeddings de OpenAI con metadata
-Soporta múltiples formatos: JSON y PDF
+Soporta múltiples formatos: JSON, PDF y CSV
 """
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from procesar_json import procesar_malla_curricular
 from procesar_pdf import procesar_pdf_materias
+from procesar_csv import procesar_csv_horarios
 import shutil
 import os
 from pathlib import Path
@@ -47,14 +48,27 @@ else:
     print(f"⚠️  PDF no encontrado en: {pdf_path}")
     print("   Si tienes un PDF, colócalo en esa ruta para procesarlo.\n")
 
+# Procesar CSV si existe
+csv_path = "data/documents/asignaturas_formato.csv"
+if Path(csv_path).exists():
+    print("📊 Procesando CSV...")
+    textos_csv, metadatas_csv = procesar_csv_horarios(csv_path)
+    todos_textos.extend(textos_csv)
+    todas_metadatas.extend(metadatas_csv)
+    print(f"✅ {len(textos_csv)} grupos del CSV procesados\n")
+else:
+    print(f"⚠️  CSV no encontrado en: {csv_path}")
+    print("   Si tienes un CSV, colócalo en esa ruta para procesarlo.\n")
+
 if not todos_textos:
     print("❌ Error: No se encontraron documentos para procesar.")
     print("   Asegúrate de tener al menos un JSON o PDF en data/documents/")
     exit(1)
 
 print(f"📊 Total de documentos a cargar: {len(todos_textos)}")
-print(f"   - JSON: {len([m for m in todas_metadatas if m.get('fuente') != 'pdf'])}")
-print(f"   - PDF: {len([m for m in todas_metadatas if m.get('fuente') == 'pdf'])}\n")
+print(f"   - JSON: {len([m for m in todas_metadatas if m.get('fuente') not in ['pdf', 'csv']])}")
+print(f"   - PDF: {len([m for m in todas_metadatas if m.get('fuente') == 'pdf'])}")
+print(f"   - CSV: {len([m for m in todas_metadatas if m.get('fuente') == 'csv'])}\n")
 
 # 2. Crear embeddings usando text-embedding-3-small de OpenAI
 print("🔗 Creando embeddings con text-embedding-3-small (OpenAI)...")
