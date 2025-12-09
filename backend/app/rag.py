@@ -516,7 +516,7 @@ def responder_con_rag(pregunta: str):
             model=model_name,
             messages=[{
                 'role': 'system', 
-                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera natural y breve.'
+                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, entusiasta y servicial. Tu objetivo es ayudar a los estudiantes con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera conversacional, cálida y natural, como si fueras un compañero de carrera que está ayudando. Sé claro y preciso, pero mantén un tono amigable.'
             }, {
                 'role': 'user', 
                 'content': pregunta
@@ -563,7 +563,7 @@ def responder_con_rag(pregunta: str):
                 if materias_filtradas:
                     return formatear_lista_materias(materias_filtradas)
                 else:
-                    return f"No se encontraron materias para el semestre {semestre}."
+                    return f"Lo siento, no encontré materias para el semestre {semestre}. ¿Quieres que busque en otro semestre?"
             
             # Si no hay filtro de semestre, devolver todas las materias encontradas
             return formatear_lista_materias(materias)
@@ -573,19 +573,19 @@ def responder_con_rag(pregunta: str):
     
     # 2. Para consultas complejas o si la extracción falló, usar LLM con prompt optimizado
     logger.info("🤖 Usando LLM para generar respuesta...")
-    # Prompt más corto para reducir tokens y tiempo de procesamiento
-    prompt_content = f"""Información: {contexto}
+    # Prompt optimizado con tono amigable
+    prompt_content = f"""Información disponible: {contexto}
 
-Pregunta: {pregunta}
+Pregunta del estudiante: {pregunta}
 
-Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. Si preguntan por créditos, da solo los créditos."""
+Usa la información proporcionada para responder de manera clara y amigable. Responde directamente lo que se pregunta, pero hazlo con un tono conversacional y servicial."""
     
     respuesta = client.chat.completions.create(
         model=model_name,
         messages=[
             {
                 'role': 'system',
-                'content': 'Eres prismaUNAL, asistente virtual de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde SOLO lo que se pregunta. Sé conciso.'
+                'content': 'Eres prismaUNAL, un asistente virtual amigable y servicial de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde de manera clara, precisa y con un tono conversacional. Sé directo pero amigable, como si estuvieras ayudando a un compañero de carrera.'
             },
             {
                 'role': 'user',
@@ -613,7 +613,7 @@ def responder_con_rag_stream(pregunta: str):
             model=model_name,
             messages=[{
                 'role': 'system', 
-                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, profesional y estás aquí para ayudar con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera natural y breve.'
+                'content': 'Eres prismaUNAL, un asistente virtual de la carrera de Administración de Sistemas Informáticos de la Universidad Nacional de Colombia, sede Manizales. Eres amigable, entusiasta y servicial. Tu objetivo es ayudar a los estudiantes con información sobre la malla curricular, materias, horarios, profesores y cualquier consulta relacionada con el programa académico. Responde de manera conversacional, cálida y natural, como si fueras un compañero de carrera que está ayudando. Sé claro y preciso, pero mantén un tono amigable.'
             }, {
                 'role': 'user', 
                 'content': pregunta
@@ -678,7 +678,7 @@ def responder_con_rag_stream(pregunta: str):
                         yield palabra + ' '
                     return
                 else:
-                    respuesta = f"No se encontraron materias para el semestre {semestre}."
+                    respuesta = f"Lo siento, no encontré materias para el semestre {semestre}. ¿Quieres que busque en otro semestre?"
                     palabras = respuesta.split(' ')
                     for palabra in palabras:
                         yield palabra + ' '
@@ -693,19 +693,19 @@ def responder_con_rag_stream(pregunta: str):
     
     # 4. Para consultas complejas, usar LLM con streaming (prompt optimizado)
     logger.info("🤖 Usando LLM para generar respuesta (streaming)...")
-    # Prompt más corto para reducir tokens y tiempo de procesamiento
-    prompt_content = f"""Información: {contexto}
+    # Prompt optimizado con tono amigable
+    prompt_content = f"""Información disponible: {contexto}
 
-Pregunta: {pregunta}
+Pregunta del estudiante: {pregunta}
 
-Responde SOLO lo que se pregunta. Si preguntan por código, da solo el código. Si preguntan por créditos, da solo los créditos."""
+Usa la información proporcionada para responder de manera clara y amigable. Responde directamente lo que se pregunta, pero hazlo con un tono conversacional y servicial."""
     
     stream = client.chat.completions.create(
         model=model_name,
         messages=[
             {
                 'role': 'system',
-                'content': 'Eres prismaUNAL, asistente virtual de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde SOLO lo que se pregunta. Sé conciso.'
+                'content': 'Eres prismaUNAL, un asistente virtual amigable y servicial de la carrera de Administración de Sistemas Informáticos de la UNAL Manizales. Responde de manera clara, precisa y con un tono conversacional. Sé directo pero amigable, como si estuvieras ayudando a un compañero de carrera.'
             },
             {
                 'role': 'user',
